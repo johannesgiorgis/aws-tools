@@ -10,21 +10,9 @@ from typing import List
 
 import boto3
 
+from support.logging_configurator import LoggingConfigurator
+
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-
-# create handler
-c_handler = logging.StreamHandler()
-c_handler.setLevel(logging.INFO)
-
-# Create formatters and add it to handlers
-LOG_FORMAT = "[%(asctime)s - %(levelname)-8s - %(module)s:%(name)s ] %(message)s"
-c_format = logging.Formatter(LOG_FORMAT)
-c_handler.setFormatter(c_format)
-
-# Add handlers to the logger
-logger.addHandler(c_handler)
-
 
 def main():
     """
@@ -88,4 +76,7 @@ def display_crawlers(crawlers: List[str]):
 
 
 if __name__ == "__main__":
+    logger.debug("Script Started")
+    LoggingConfigurator.configure_logging()
     main()
+    logger.debug("Script Completed")
