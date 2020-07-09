@@ -16,6 +16,7 @@ from support.logging_configurator import LoggingConfigurator
 
 logger = logging.getLogger(__name__)
 
+
 def main():
     """
     main program

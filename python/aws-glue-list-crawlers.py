@@ -10,9 +10,12 @@ from typing import List
 
 import boto3
 
+
 from support.logging_configurator import LoggingConfigurator
 
+
 logger = logging.getLogger(__name__)
+
 
 def main():
     """
