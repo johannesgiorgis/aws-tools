@@ -13,6 +13,7 @@ import pprint as pp
 import boto3
 
 from support.logging_configurator import LoggingConfigurator
+from support.aws import Aws
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +23,7 @@ def main():
     check_debug_mode(args)
     logger.debug(args)
 
-    ssm = boto3.client("ssm")
+    ssm = Aws.create_client(args.profile, "ssm")
 
     # get parameter
     parameter = get_parameter(ssm, args.token, args.with_decryption)
@@ -41,12 +42,11 @@ def main():
 def setup_args() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=None)
     parser.add_argument("-t", "--token", help="token key", required=True)
-    parser.add_argument(
-        "-w", "--with_decryption", help="decryption flag", action="store_true"
-    )
+    parser.add_argument("-w", "--with_decryption", help="decryption flag", action="store_true")
     parser.add_argument(
         "-f", "--full_info", help="get full JSON info of parameter", action="store_true"
     )
+    parser.add_argument("-p", "--profile", choices=Aws.get_profiles(), required=True)
     parser.add_argument("-d", "--debug", action="store_true")
     return parser.parse_args()
 

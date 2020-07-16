@@ -12,6 +12,7 @@ import boto3
 
 
 from support.logging_configurator import LoggingConfigurator
+from support.aws import Aws
 
 
 logger = logging.getLogger(__name__)
@@ -23,7 +24,8 @@ def main():
     """
     args = setup_args()
     check_debug_mode(args)
-    client = boto3.client("glue")
+
+    client = Aws.create_client(args.profile, "glue")
 
     # get crawlers - filter by environment if provided
     crawlers = list_crawlers(client, filter=args.environment)
@@ -36,6 +38,7 @@ def setup_args() -> argparse.ArgumentParser:
     parser.add_argument(
         "-e", "--environment", help="environment", choices=["dev", "stg"], default=""
     )
+    parser.add_argument("-p", "--profile", choices=Aws.get_profiles(), required=True)
     parser.add_argument("-d", "--debug", action="store_true")
     return parser.parse_args()
 

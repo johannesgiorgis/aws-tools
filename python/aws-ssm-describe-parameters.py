@@ -12,6 +12,7 @@ from typing import List
 import boto3
 
 from support.logging_configurator import LoggingConfigurator
+from support.aws import Aws
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +24,8 @@ def main():
     args = setup_args()
     check_debug_mode(args)
     logger.debug(args)
-    ssm = boto3.client("ssm")
+
+    ssm = Aws.create_client(args.profile, "ssm")
 
     # get parameters - filter by environment if provided
     parameters = describe_parameters(ssm, values=args.values)
@@ -33,9 +35,8 @@ def main():
 
 def setup_args() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=None)
-    parser.add_argument(
-        "-v", "--values", help="Filter Values", nargs="*", type=str, default=[]
-    )
+    parser.add_argument("-v", "--values", help="Filter Values", nargs="*", type=str, default=[])
+    parser.add_argument("-p", "--profile", choices=Aws.get_profiles(), required=True)
     parser.add_argument("-d", "--debug", action="store_true")
     return parser.parse_args()
 
@@ -58,9 +59,7 @@ def describe_parameters(ssm: boto3.client, values: List[str] = []) -> List[str]:
 
         logger.info("Getting parameters that contain '%s'..." % values)
         call_arguments = {
-            "ParameterFilters": [
-                {"Key": "Name", "Option": "Contains", "Values": values}
-            ],
+            "ParameterFilters": [{"Key": "Name", "Option": "Contains", "Values": values}],
             "NextToken": next_token,
         }
 
