@@ -5,7 +5,6 @@ Run AWS Glue Crawlers
 
 import argparse
 import logging
-import pprint as pp
 import sys
 
 from typing import List

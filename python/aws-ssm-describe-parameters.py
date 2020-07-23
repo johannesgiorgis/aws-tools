@@ -5,7 +5,6 @@ Describe AWS SSM Crawlers
 
 import argparse
 import logging
-import pprint as pp
 
 from typing import List
 
