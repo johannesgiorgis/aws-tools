@@ -23,9 +23,8 @@ def main():
     """
     args = setup_args()
     check_debug_mode(args)
-    # client = boto3.client("glue")
+
     client = Aws.create_client(args.profile, "glue")
-    print(args)
 
     # read file content
     crawlers = get_crawlers(args.input_file)
@@ -48,7 +47,10 @@ def main():
 def setup_args() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=None)
     parser.add_argument(
-        "-i", "--input_file", help="input file containing crawlers to run", required=True,
+        "-i",
+        "--input_file",
+        help="input file containing crawlers to run",
+        required=True,
     )
     parser.add_argument("-s", "--start_crawlers", action="store_true")
     parser.add_argument("-p", "--profile", choices=Aws.get_profiles(), required=True)
@@ -72,7 +74,9 @@ def get_crawlers(input_file: str) -> List[str]:
     return crawlers
 
 
-def get_crawlers_in_state(client: boto3.client, crawlers: List[str], state: str = "READY"):
+def get_crawlers_in_state(
+    client: boto3.client, crawlers: List[str], state: str = "READY"
+):
     state = state.upper()
     logger.info("Getting crawlers in state '%s'..." % state)
     crawlers_in_state = []

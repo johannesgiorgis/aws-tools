@@ -42,7 +42,9 @@ def main():
 def setup_args() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=None)
     parser.add_argument("-t", "--token", help="token key", required=True)
-    parser.add_argument("-w", "--with_decryption", help="decryption flag", action="store_true")
+    parser.add_argument(
+        "-w", "--with_decryption", help="decryption flag", action="store_true"
+    )
     parser.add_argument(
         "-f", "--full_info", help="get full JSON info of parameter", action="store_true"
     )
