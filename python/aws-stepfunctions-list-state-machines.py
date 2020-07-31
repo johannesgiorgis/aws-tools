@@ -12,6 +12,7 @@ from typing import List
 import boto3
 
 
+from aws.stepfunctions import StepFunctions
 from support.logging_configurator import LoggingConfigurator
 from support.aws import Aws
 
@@ -25,10 +26,9 @@ def main():
     """
     args = setup_args()
     check_debug_mode(args)
-
     client = Aws.create_client(args.profile, "stepfunctions")
-
-    state_machines = list_state_machines(client)
+    step_functions = StepFunctions(client)
+    state_machines = step_functions.get_list_of_state_machines()
     logger.info("Found %d state machines" % len(state_machines))
     display_crawlers(state_machines)
 
@@ -72,7 +72,7 @@ def display_crawlers(state_machines: List[dict]):
 
 
 if __name__ == "__main__":
-    logger.debug("Script Started")
     LoggingConfigurator.configure_logging()
+    logger.debug("Script Started")
     main()
     logger.debug("Script Completed")
