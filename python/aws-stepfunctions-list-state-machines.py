@@ -30,7 +30,7 @@ def main():
     step_functions = StepFunctions(client)
     state_machines = step_functions.get_list_of_state_machines()
     logger.info("Found %d state machines" % len(state_machines))
-    display_crawlers(state_machines)
+    display_state_machines(state_machines)
 
 
 def setup_args() -> argparse.ArgumentParser:
@@ -65,14 +65,14 @@ def list_state_machines(client: boto3.client) -> List[dict]:
     return state_machines
 
 
-def display_crawlers(state_machines: List[dict]):
-    headers = list(state_machines[0].keys())
-    table = [list(state_machine.values()) for state_machine in state_machines]
+def display_state_machines(state_machines: List[dict]):
+    headers = list(vars(state_machines[0]).keys())
+    table = [state_machine.values() for state_machine in state_machines]
     print(tabulate(table, headers, tablefmt="simple"))
 
 
 if __name__ == "__main__":
     LoggingConfigurator.configure_logging()
-    logger.debug("Script Started")
+    logger.info("Script Started")
     main()
-    logger.debug("Script Completed")
+    logger.info("Script Completed")
