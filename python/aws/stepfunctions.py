@@ -2,22 +2,23 @@
 AWS Step Functions
 """
 
-import datetime
+# import datetime
+from datetime import datetime
 import logging
 
 import boto3
 
-from typing import List
+from typing import Dict, List
 
 logger = logging.getLogger(__name__)
 
 
 class StateMachine:
-    def __init__(self, arn: str, name: str, sm_type: str, creation_date: datetime.datetime):
-        self.arn = arn
-        self.name = name
-        self.type = sm_type
-        self.creation_date = creation_date
+    def __init__(self, arn: str, name: str, sm_type: str, creation_date: datetime):
+        self.arn: str = arn
+        self.name: str = name
+        self.type: str = sm_type
+        self.creation_date: datetime = creation_date
 
     def values(self) -> List[str]:
         return [self.arn, self.name, self.type, self.creation_date]
@@ -27,9 +28,21 @@ class StepFunctions:
     def __init__(self, client: boto3.client):
         self.client = client
         self.state_machines: List[StateMachine] = []
+        self.state_machines_by_name: Dict[str, StateMachine] = {}
 
-    def get_state_machine_arn(state_machine_name: str) -> str:
+    def get_state_machine_arn(self, state_machine_name: str) -> str:
         pass
+
+    def filter_state_machines_by_name(self, names: List[str]) -> List[StateMachine]:
+        desired_state_machines = []
+        for sm in self.state_machines:
+            if state_machine_name in sm.name:
+                desired_state_machines.append(sm)
+        return desired_state_machines
+
+    def get_state_machines_by_name(self) -> Dict[str, StateMachine]:
+        for sm in self.state_machines:
+            self.state_machines_by_name[sm.name] = sm
 
     def list_state_machines(self):
         logger.debug("Listing state machines...")
