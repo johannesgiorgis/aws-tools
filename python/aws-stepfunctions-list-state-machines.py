@@ -26,8 +26,7 @@ def main():
     """
     args = setup_args()
     check_debug_mode(args)
-    client = Aws.create_client(args.profile, "stepfunctions")
-    step_functions = StepFunctions(client)
+    step_functions = StepFunctions(profile_name=args.profile)
     state_machines = step_functions.get_list_of_state_machines()
     logger.info("Found %d state machines" % len(state_machines))
     display_state_machines(state_machines)

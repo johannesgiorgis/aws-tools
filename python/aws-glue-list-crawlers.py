@@ -23,8 +23,7 @@ def main():
     args = setup_args()
     check_debug_mode(args)
 
-    session = Aws.create_session(args.profile)
-    glue = Glue(session)
+    glue = Glue(args.profile)
     crawlers = glue.get_list_of_crawlers(args.filter)
     logger.info("Found %d crawlers" % len(crawlers))
     display_crawlers(crawlers)

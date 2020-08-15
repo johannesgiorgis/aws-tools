@@ -2,13 +2,15 @@
 AWS Step Functions
 """
 
-# import datetime
 from datetime import datetime
 import logging
 
 import boto3
 
 from typing import Dict, List
+
+from aws.aws_service import AwsService
+from support.aws import Aws
 
 logger = logging.getLogger(__name__)
 
@@ -24,11 +26,20 @@ class StateMachine:
         return [self.arn, self.name, self.type, self.creation_date]
 
 
-class StepFunctions:
-    def __init__(self, client: boto3.client):
-        self.client = client
+class StepFunctions(AwsService):
+    """
+    Step Functions Client
+    """
+
+    def __init__(self, profile_name: str):
+        self.profile_name = profile_name
+        self.client_name = "stepfunctions"
+        self.client = self._create_client()
         self.state_machines: List[StateMachine] = []
         self.state_machines_by_name: Dict[str, StateMachine] = {}
+
+    def _create_client(self) -> boto3.client:
+        return Aws.create_client(self.profile_name, self.client_name)
 
     def get_state_machine_arn(self, state_machine_name: str) -> str:
         pass

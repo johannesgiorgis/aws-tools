@@ -8,19 +8,21 @@ from typing import List
 
 import boto3
 
-from aws.aws import Aws
+from aws.aws_service import AwsService
+from support.aws import Aws
 
 logger = logging.getLogger(__name__)
 
 
-class Glue(Aws):
-    def __init__(self, session: boto3.session):
-        self.session = session
-        self.client = self._create_client(session)
+class Glue(AwsService):
+    def __init__(self, profile_name: str):
+        self.profile_name = profile_name
+        self.client_name = "glue"
+        self.client = self._create_client()
         self.crawlers: List[str] = []
 
-    def _create_client(self, session: boto3.session):
-        return session.client("glue")
+    def _create_client(self) -> boto3.client:
+        return Aws.create_client(self.profile_name, self.client_name)
 
     def batch_get_crawlers(self, crawler_names: List[str]):
         logger.debug("Batch getting crawlers...")
