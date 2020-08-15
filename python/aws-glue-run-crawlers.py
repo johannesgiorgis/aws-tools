@@ -11,6 +11,7 @@ from typing import List
 
 import boto3
 
+from aws.glue import Glue
 from support.logging_configurator import LoggingConfigurator
 from support.aws import Aws
 
@@ -25,13 +26,15 @@ def main():
     check_debug_mode(args)
 
     client = Aws.create_client(args.profile, "glue")
+    # session = Aws.create_session(args.profile)
+    # glue = Glue(session)
 
     # read file content
-    crawlers = get_crawlers(args.input_file)
-    logger.info("Going to run %d crawlers" % len(crawlers))
+    # crawlers = read_crawlers_file(args.input_file)
+    logger.info("Going to run %d crawlers" % len(args.crawler_names))
 
     # get crawlers in ready state
-    crawlers_to_start = get_crawlers_in_state(client, crawlers, state="READY")
+    crawlers_to_start = get_crawlers_in_state(client, args.crawler_names, state="READY")
 
     if not args.start_crawlers:
         logger.warning("Simply monitoring - No crawlers will be started!")
@@ -47,9 +50,12 @@ def main():
 def setup_args() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=None)
     parser.add_argument(
-        "-i",
-        "--input_file",
-        help="input file containing crawlers to run",
+        # "-i", "--input_file", help="input file containing crawlers to run", required=True,
+        "-c",
+        "--crawler_names",
+        nargs="+",
+        type=str,
+        help="crawler names",
         required=True,
     )
     parser.add_argument("-s", "--start_crawlers", action="store_true")
@@ -66,7 +72,7 @@ def check_debug_mode(args):
             handler.setLevel(logging.DEBUG)
 
 
-def get_crawlers(input_file: str) -> List[str]:
+def read_crawlers_file(input_file: str) -> List[str]:
     logger.debug("Reading file %s" % input_file)
     with open(input_file, "r") as file_obj:
         crawlers = file_obj.read().splitlines()
@@ -74,9 +80,7 @@ def get_crawlers(input_file: str) -> List[str]:
     return crawlers
 
 
-def get_crawlers_in_state(
-    client: boto3.client, crawlers: List[str], state: str = "READY"
-):
+def get_crawlers_in_state(client: boto3.client, crawlers: List[str], state: str = "READY"):
     state = state.upper()
     logger.info("Getting crawlers in state '%s'..." % state)
     crawlers_in_state = []
