@@ -8,11 +8,9 @@ import logging
 
 from typing import List
 
-import boto3
-
-
 from support.logging_configurator import LoggingConfigurator
 from support.aws import Aws
+from aws.glue import Glue
 
 
 logger = logging.getLogger(__name__)
@@ -25,10 +23,9 @@ def main():
     args = setup_args()
     check_debug_mode(args)
 
-    client = Aws.create_client(args.profile, "glue")
-
-    # get crawlers - filter by environment if provided
-    crawlers = list_crawlers(client, filter=args.environment)
+    session = Aws.create_session(args.profile)
+    glue = Glue(session)
+    crawlers = glue.get_list_of_crawlers(args.filter)
     logger.info("Found %d crawlers" % len(crawlers))
     display_crawlers(crawlers)
 
@@ -36,7 +33,7 @@ def main():
 def setup_args() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=None)
     parser.add_argument(
-        "-e", "--environment", help="environment", choices=["dev", "stg"], default=""
+        "-f", "--filter", help="string filter to look for in crawler names", default=""
     )
     parser.add_argument("-p", "--profile", choices=Aws.get_profiles(), required=True)
     parser.add_argument("-d", "--debug", action="store_true")
@@ -49,31 +46,6 @@ def check_debug_mode(args):
 
         for handler in logger.handlers:
             handler.setLevel(logging.DEBUG)
-
-
-def list_crawlers(client: boto3.client, filter: str = "") -> List[str]:
-    logger.debug("Listing crawlers...")
-
-    crawlers = []
-    next_token = ""
-    got_all_crawlers = False
-    while not got_all_crawlers:
-        resp = client.list_crawlers(NextToken=next_token)
-        # logger.debug(pp.pformat(resp["CrawlerNames"]))
-
-        if filter:
-            for crawler_name in resp["CrawlerNames"]:
-                if filter in crawler_name:
-                    crawlers.append(crawler_name)
-        else:
-            crawlers.extend(resp["CrawlerNames"])
-
-        next_token = resp.get("NextToken", None)
-
-        if not next_token:
-            got_all_crawlers = True
-    logger.debug("Completed listing crawlers!")
-    return crawlers
 
 
 def display_crawlers(crawlers: List[str]):
