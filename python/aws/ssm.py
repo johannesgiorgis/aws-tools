@@ -2,6 +2,7 @@
 AWS SSM Service
 """
 
+from datetime import datetime
 import logging
 
 import boto3
@@ -12,6 +13,41 @@ from aws.aws_service import AwsService
 from support.aws import Aws
 
 logger = logging.getLogger(__name__)
+
+
+class Parameter:
+    def __init__(
+        self,
+        ARN: str,
+        Name: str,
+        Type: str,
+        Value: str,
+        Version: int,
+        LastModifiedDate: datetime,
+        DataType: str,
+    ):
+        self.arn: str = ARN
+        self.name: str = Name
+        self.type: str = Type
+        self.value: str = Value
+        self.version: int = Version
+        self.last_modified_date: datetime = LastModifiedDate
+        self.data_type: str = DataType
+
+    def display(self, show_full_info: bool):
+
+        if show_full_info:
+            return {
+                "Name": self.name,
+                "Type": self.type,
+                "Value": self.value,
+                "Version": self.version,
+                "LastModifiedDate": self.last_modified_date.__str__(),
+                "ARN": self.arn,
+                "DataType": self.data_type,
+            }
+        else:
+            return self.value
 
 
 class SSM(AwsService):
@@ -68,7 +104,16 @@ class SSM(AwsService):
                 got_all_parameters = True
 
             arguments["NextToken"] = next_token
+        logger.info("Found %d parameters" % len(self.parameters))
 
     def get_describe_parameters(self, values: List[str] = []) -> List[str]:
         self.describe_parameters(values)
         return self.parameters
+
+    def display_parameters_names(self):
+        for parameter in self.parameters:
+            print(parameter["Name"])
+
+    def get_parameter(self, token_key: str, decrypt: bool) -> dict:
+        token_param = self.client.get_parameter(Name=token_key, WithDecryption=decrypt)
+        return Parameter(**token_param["Parameter"])
