@@ -5,9 +5,10 @@ AWS Step Functions
 from datetime import datetime
 import logging
 
-import boto3
-
 from typing import Dict, List
+
+import boto3
+from tabulate import tabulate
 
 from aws.aws_service import AwsService
 from support.aws import Aws
@@ -67,10 +68,13 @@ class StepFunctions(AwsService):
 
         while next_token:
             resp = self.client.list_state_machines(nextToken=next_token)
-            converted = self._convert_dict_to_state_machine(resp["stateMachines"])
+            converted: List[StateMachine] = self._convert_dict_to_state_machine(
+                resp["stateMachines"]
+            )
             self.state_machines.extend(converted)
             next_token = resp.get("nextToken", None)
 
+        logger.info("Found %d state machines" % len(self.state_machines))
         logger.debug("Completed listing state machines!")
 
     def _convert_dict_to_state_machine(self, state_machines: List[dict]) -> List[StateMachine]:
@@ -89,7 +93,9 @@ class StepFunctions(AwsService):
             )
         return converted
 
-    def get_list_of_state_machines(self) -> List[StateMachine]:
-        self.list_state_machines()
-        logger.info("Found %d state machines" % len(self.state_machines))
-        return self.state_machines
+    def display_state_machines(self):
+        headers = list(vars(self.state_machines[0]).keys())
+        print("heders:", headers)
+        table = [state_machine.values() for state_machine in self.state_machines]
+        print("tables:", table[0])
+        print(tabulate(table, headers, tablefmt="simple"))

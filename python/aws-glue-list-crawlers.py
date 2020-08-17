@@ -6,8 +6,6 @@ List AWS Glue Crawlers
 import argparse
 import logging
 
-from typing import List
-
 from support.logging_configurator import LoggingConfigurator
 from support.aws import Aws
 from aws.glue import Glue
@@ -24,9 +22,8 @@ def main():
     check_debug_mode(args)
 
     glue = Glue(args.profile)
-    crawlers = glue.get_list_of_crawlers(args.filter)
-    logger.info("Found %d crawlers" % len(crawlers))
-    display_crawlers(crawlers)
+    glue.list_crawlers(args.filter)
+    glue.display_crawler_names()
 
 
 def setup_args() -> argparse.ArgumentParser:
@@ -47,13 +44,8 @@ def check_debug_mode(args):
             handler.setLevel(logging.DEBUG)
 
 
-def display_crawlers(crawlers: List[str]):
-    for crawler in crawlers:
-        print(crawler)
-
-
 if __name__ == "__main__":
-    logger.debug("Script Started")
     LoggingConfigurator.configure_logging()
+    logger.info("Script Started")
     main()
-    logger.debug("Script Completed")
+    logger.info("Script Completed")

@@ -6,7 +6,6 @@ Describe AWS SSM Crawlers
 import argparse
 import logging
 
-
 from support.logging_configurator import LoggingConfigurator
 from support.aws import Aws
 from aws.ssm import SSM
