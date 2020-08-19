@@ -96,7 +96,7 @@ class Glue(AwsService):
             if filter:
                 for crawler_name in resp["CrawlerNames"]:
                     if filter in crawler_name:
-                        self.crawlers.append(crawler_name)
+                        self.crawler_names.append(crawler_name)
             else:
                 self.crawler_names.extend(resp["CrawlerNames"])
 
