@@ -32,7 +32,9 @@ def setup_args() -> argparse.ArgumentParser:
     parser.add_argument(
         "-f", "--filter", help="string filter to look for in crawler names", default=""
     )
-    parser.add_argument("-p", "--profile", choices=Aws.get_profiles(), default="default")
+    parser.add_argument(
+        "-p", "--profile", choices=Aws.get_profiles(), default="default"
+    )
     parser.add_argument("-d", "--debug", action="store_true")
     return parser.parse_args()
 

@@ -71,9 +71,22 @@ class Glue(AwsService):
     def batch_get_crawlers(self, crawler_names: List[str]):
         logger.debug("Batch getting crawlers...")
 
-        resp = self.client.batch_get_crawlers(CrawlerNames=crawler_names)
-        converted: List[Crawler] = self._convert_crawler_dict_to_class(resp["Crawlers"])
-        self.crawlers.extend(converted)
+        # BatchGetCrawlers only accepts between 1 and 25 crawlers at a time
+        # botocore.errorfactory.InvalidInputException: An error occurred (InvalidInputException)
+        # when calling the BatchGetCrawlers operation: Number of requested crawlers must be between
+        # 1 and 25
+        start_idx = 0
+        end_idx = 24
+
+        while len(self.crawlers) < len(crawler_names):
+            crawler_names_batch_25 = crawler_names[start_idx:end_idx]
+            resp = self.client.batch_get_crawlers(CrawlerNames=crawler_names_batch_25)
+            converted: List[Crawler] = self._convert_crawler_dict_to_class(
+                resp["Crawlers"]
+            )
+            self.crawlers.extend(converted)
+            start_idx = end_idx
+            end_idx += end_idx
 
         logger.debug("Completed batch getting crawlers!")
 
@@ -105,7 +118,7 @@ class Glue(AwsService):
             if not next_token:
                 got_all_crawlers = True
 
-        logger.info("Found %d crawlers" % len(self.crawlers))
+        logger.info("Found %d crawlers" % len(self.crawler_names))
         logger.debug("Completed listing crawlers!")
 
     def display_crawler_names(self):
@@ -113,9 +126,10 @@ class Glue(AwsService):
             print(crawler_name)
 
     def display_crawlers(self):
-        headers = list(self.crawlers[0].values().keys())
-        table = [crawler.values().values() for crawler in self.crawlers]
-        print(tabulate(table, headers, tablefmt="simple"))
+        if self.crawlers:
+            headers = list(self.crawlers[0].values().keys())
+            table = [crawler.values().values() for crawler in self.crawlers]
+            print(tabulate(table, headers, tablefmt="simple"))
 
     def get_crawler_names_by_state(self, state: str = "READY"):
         crawlers_in_state: List[Crawler] = []

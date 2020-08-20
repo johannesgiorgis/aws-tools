@@ -42,20 +42,6 @@ class StepFunctions(AwsService):
     def _create_client(self) -> boto3.client:
         return Aws.create_client(self.profile_name, self.client_name)
 
-    def get_state_machine_arn(self, state_machine_name: str) -> str:
-        pass
-
-    def filter_state_machines_by_name(self, names: List[str]) -> List[StateMachine]:
-        desired_state_machines = []
-        for sm in self.state_machines:
-            if state_machine_name in sm.name:
-                desired_state_machines.append(sm)
-        return desired_state_machines
-
-    def get_state_machines_by_name(self) -> Dict[str, StateMachine]:
-        for sm in self.state_machines:
-            self.state_machines_by_name[sm.name] = sm
-
     def list_state_machines(self):
         logger.debug("Listing state machines...")
 
@@ -77,7 +63,9 @@ class StepFunctions(AwsService):
         logger.info("Found %d state machines" % len(self.state_machines))
         logger.debug("Completed listing state machines!")
 
-    def _convert_dict_to_state_machine(self, state_machines: List[dict]) -> List[StateMachine]:
+    def _convert_dict_to_state_machine(
+        self, state_machines: List[dict]
+    ) -> List[StateMachine]:
         """
         Converts dictionary representation of State Machine to StateMachine class
         """
@@ -94,8 +82,30 @@ class StepFunctions(AwsService):
         return converted
 
     def display_state_machines(self):
-        headers = list(vars(self.state_machines[0]).keys())
-        print("heders:", headers)
-        table = [state_machine.values() for state_machine in self.state_machines]
-        print("tables:", table[0])
-        print(tabulate(table, headers, tablefmt="simple"))
+        if self.state_machines:
+            headers = list(vars(self.state_machines[0]).keys())
+            print("heders:", headers)
+            table = [state_machine.values() for state_machine in self.state_machines]
+            print("tables:", table[0])
+            print(tabulate(table, headers, tablefmt="simple"))
+
+    def organize_state_machines_by_name(self):
+        for sm in self.state_machines:
+            self.state_machines_by_name[sm.name] = sm
+
+    def get_state_machines_arns(self, state_machine_names: List[str]) -> List[str]:
+        state_machines_arns = []
+        for sm_name in state_machine_names:
+            state_machines_arns.append(self.state_machines_by_name[sm_name].arn)
+        return state_machines_arns
+
+    def execute_state_machines(self, state_machine_arns: List[str]):
+        """
+        execute state machines
+        """
+        logger.info(
+            "Starting execution for %d state machines" % len(state_machine_arns)
+        )
+        for sm_arn in state_machine_arns:
+            resp = self.client.start_execution(stateMachineArn=sm_arn)
+            logger.info("resp:%s", resp)

@@ -43,7 +43,12 @@ def main():
 def setup_args() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=None)
     parser.add_argument(
-        "-c", "--crawler_names", nargs="+", type=str, help="crawler names", required=True,
+        "-c",
+        "--crawler_names",
+        nargs="+",
+        type=str,
+        help="crawler names",
+        required=True,
     )
     parser.add_argument("-s", "--start_crawlers", action="store_true")
     parser.add_argument("-p", "--profile", choices=Aws.get_profiles(), required=True)

@@ -1,6 +1,13 @@
 #!/usr/bin/env python3
 """
 List AWS Step Functions State Machines
+---
+
+Currently no way to batch get step functions so need to
+get full list of step functions that exist, then filter out
+based on list provided by user to get the list of step functions
+to execute.
+This is also because start_execution() only takes stateMachineArn
 """
 
 import argparse
@@ -28,21 +35,30 @@ def main():
     Util.check_debug_mode(args)
     print(args)
 
-    client = Aws.create_client(args.profile, "stepfunctions")
+    # client = Aws.create_client(args.profile, "stepfunctions")
 
     # get arm for state machine
-    step_functions = StepFunctions(client)
+    # step_functions = StepFunctions(client)
+    step_functions = StepFunctions(args.profile)
     step_functions.list_state_machines()
-    sm_by_name = step_functions.get_state_machines_by_name()
+    step_functions.organize_state_machines_by_name()
+    state_machines_arns = step_functions.get_state_machines_arns(
+        args.state_machines_names
+    )
+
+    print(state_machines_arns)
+    logger.info("Starting state machines %s" % state_machines_arns)
+
+    step_functions.execute_state_machines(state_machines_arns)
 
     # describe state machines
     # step_functions.list_state_machines_by_name(args.)
-    for sm in args.state_machines:
-        client.describe_state_machine(sm)
+    # for sm in args.state_machines:
+    #     client.describe_state_machine(sm)
 
-    state_machines = list_state_machines(client)
-    logger.info("Found %d state machines" % len(state_machines))
-    display_crawlers(state_machines)
+    # state_machines = list_state_machines(client)
+    # logger.info("Found %d state machines" % len(state_machines))
+    # display_crawlers(state_machines)
 
 
 def setup_args() -> argparse.ArgumentParser:
@@ -52,13 +68,15 @@ def setup_args() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "-s",
-        "--state_machines",
+        "--state_machines_names",
         help="state machines to execute",
         type=str,
         nargs="*",
         required=True,
     )
-    parser.add_argument("-p", "--profile", choices=Aws.get_profiles(), default="default")
+    parser.add_argument(
+        "-p", "--profile", choices=Aws.get_profiles(), default="default"
+    )
     parser.add_argument("-d", "--debug", action="store_true")
     return parser.parse_args()
 
@@ -87,7 +105,7 @@ def display_crawlers(state_machines: List[dict]):
 
 
 if __name__ == "__main__":
-    logger.debug("Script Started")
     LoggingConfigurator.configure_logging()
+    logger.debug("Script Started")
     main()
     logger.debug("Script Completed")
