@@ -41,6 +41,6 @@ def setup_args() -> argparse.ArgumentParser:
 
 if __name__ == "__main__":
     LoggingConfigurator.configure_logging()
-    logger.info("Script Started")
+    logger.debug("Script Started")
     main()
-    logger.info("Script Completed")
+    logger.debug("Script Completed")

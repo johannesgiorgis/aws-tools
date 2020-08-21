@@ -118,7 +118,7 @@ class Glue(AwsService):
             if not next_token:
                 got_all_crawlers = True
 
-        logger.info("Found %d crawlers" % len(self.crawler_names))
+        logger.debug("Found %d crawlers" % len(self.crawler_names))
         logger.debug("Completed listing crawlers!")
 
     def display_crawler_names(self):
