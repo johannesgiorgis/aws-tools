@@ -77,16 +77,15 @@ class Glue(AwsService):
         # 1 and 25
         start_idx = 0
         end_idx = 24
+        num_elements = 24
 
         while len(self.crawlers) < len(crawler_names):
             crawler_names_batch_25 = crawler_names[start_idx:end_idx]
             resp = self.client.batch_get_crawlers(CrawlerNames=crawler_names_batch_25)
-            converted: List[Crawler] = self._convert_crawler_dict_to_class(
-                resp["Crawlers"]
-            )
+            converted: List[Crawler] = self._convert_crawler_dict_to_class(resp["Crawlers"])
             self.crawlers.extend(converted)
             start_idx = end_idx
-            end_idx += end_idx
+            end_idx += num_elements
 
         logger.debug("Completed batch getting crawlers!")
 
@@ -144,11 +143,11 @@ class Glue(AwsService):
     def start_crawlers(self, crawlers: List[str]):
         logger.info("Starting %d crawlers..." % len(crawlers))
 
-        for crawler_name in crawlers:
+        for i, crawler_name in enumerate(crawlers):
+            logger.info("%d/%d - Starting crawler '%s'..." % (i, len(crawlers), crawler_name))
             self.start_crawler(crawler_name)
         logger.info("Completed %d starting crawlers" % len(crawlers))
 
     def start_crawler(self, crawler_name: str):
-        logger.info("Starting crawler '%s'..." % crawler_name)
         resp = self.client.start_crawler(Name=crawler_name)
         logger.debug("Completed starting crawler: %s" % resp)
