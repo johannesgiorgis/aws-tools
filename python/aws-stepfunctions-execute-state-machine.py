@@ -33,12 +33,8 @@ def main():
     """
     args = setup_args()
     Util.check_debug_mode(args)
-    print(args)
-
-    # client = Aws.create_client(args.profile, "stepfunctions")
 
     # get arm for state machine
-    # step_functions = StepFunctions(client)
     step_functions = StepFunctions(args.profile)
     step_functions.list_state_machines()
     step_functions.organize_state_machines_by_name()
@@ -50,15 +46,6 @@ def main():
     logger.info("Starting state machines %s" % state_machines_arns)
 
     step_functions.execute_state_machines(state_machines_arns)
-
-    # describe state machines
-    # step_functions.list_state_machines_by_name(args.)
-    # for sm in args.state_machines:
-    #     client.describe_state_machine(sm)
-
-    # state_machines = list_state_machines(client)
-    # logger.info("Found %d state machines" % len(state_machines))
-    # display_crawlers(state_machines)
 
 
 def setup_args() -> argparse.ArgumentParser:
@@ -81,21 +68,21 @@ def setup_args() -> argparse.ArgumentParser:
     return parser.parse_args()
 
 
-def list_state_machines(client: boto3.client) -> List[dict]:
-    logger.debug("Listing step functions...")
+# def list_state_machines(client: boto3.client) -> List[dict]:
+#     logger.debug("Listing step functions...")
 
-    state_machines = []
-    resp = client.list_state_machines()
-    state_machines.extend(resp["stateMachines"])
-    next_token = resp.get("NextToken", None)
+#     state_machines = []
+#     resp = client.list_state_machines()
+#     state_machines.extend(resp["stateMachines"])
+#     next_token = resp.get("NextToken", None)
 
-    while next_token:
-        resp = client.list_state_machines(nextToken=next_token)
-        state_machines.extend(resp["stateMachines"])
-        next_token = resp.get("NextToken", None)
+#     while next_token:
+#         resp = client.list_state_machines(nextToken=next_token)
+#         state_machines.extend(resp["stateMachines"])
+#         next_token = resp.get("NextToken", None)
 
-    logger.debug("Completed listing state machines!")
-    return state_machines
+#     logger.debug("Completed listing state machines!")
+#     return state_machines
 
 
 def display_crawlers(state_machines: List[dict]):
