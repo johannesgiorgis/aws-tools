@@ -25,7 +25,6 @@ class Crawler:
         CrawlElapsedTime: float,
         CreationTime: datetime,
         DatabaseName: str,
-        LastCrawl: dict,
         LastUpdated: datetime,
         Name: str,
         Role: str,
@@ -34,13 +33,13 @@ class Crawler:
         State: str,
         Targets: dict,
         Version: int,
+        LastCrawl: dict = None,
     ):
         self.classifiers: list = Classifiers
         self.configuration: dict = Configuration
         self.crawl_elapsed_time: float = CrawlElapsedTime
         self.creation_time: datetime = CreationTime
         self.database_name: str = DatabaseName
-        self.last_crawl: dict = LastCrawl
         self.last_updated: datetime = LastUpdated
         self.name: str = Name
         self.role: str = Role
@@ -49,6 +48,8 @@ class Crawler:
         self.state: str = State
         self.targets: dict = Targets
         self.version: int = Version
+        if LastCrawl:
+            self.last_crawl: dict = LastCrawl
 
     def __repr__(self):
         return json.dumps(self.values())
