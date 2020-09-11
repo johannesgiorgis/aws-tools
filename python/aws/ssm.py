@@ -6,6 +6,7 @@ from datetime import datetime
 import logging
 
 import boto3
+from botocore.exceptions import ClientError
 
 from typing import List
 
@@ -50,6 +51,24 @@ class Parameter:
             return self.value
 
 
+class NewParameter:
+    valid_type_values = ("String", "StringList", "SecureString")
+
+    def __init__(
+        self,
+        Name: int,
+        Value: str,
+        Type: str,
+        Description: str = "",
+    ) -> None:
+        self.Name: str = Name
+        self.Value: str = Value
+        self.Description: str = Description
+        if Type not in NewParameter.valid_type_values:
+            raise ValueError("Type is not a valid value")
+        self.Type = Type
+
+
 class SSM(AwsService):
     """
     SSM Client
@@ -73,9 +92,7 @@ class SSM(AwsService):
 
             logger.info("Getting parameters that contain '%s'..." % values)
             call_arguments = {
-                "ParameterFilters": [
-                    {"Key": "Name", "Option": "Contains", "Values": values}
-                ],
+                "ParameterFilters": [{"Key": "Name", "Option": "Contains", "Values": values}],
                 "NextToken": next_token,
             }
 
@@ -119,3 +136,37 @@ class SSM(AwsService):
     def get_parameter(self, token_key: str, decrypt: bool) -> dict:
         token_param = self.client.get_parameter(Name=token_key, WithDecryption=decrypt)
         return Parameter(**token_param["Parameter"])
+
+    def put_parameters(self, new_parameters: List[NewParameter]):
+        """
+        Add multiple new parameters to AWS SSM
+        """
+        # check if parameter already exists - skip if it does
+        for new_parameter in new_parameters:
+
+            try:
+                token = self.get_parameter(new_parameter.Name, decrypt=False)
+                logger.error("Parameter '%s' already exists!" % new_parameter.Name)
+
+            # except self.client.ParameterNotFound:
+            except ClientError as error:
+                if error.response["Error"]["Code"] == "ParameterNotFound":
+                    logger.warning(
+                        "Parameter Not Found. Creating new parameter for '%s'..."
+                        % new_parameter.Name
+                    )
+                    self.put_parameter(new_parameter)
+                else:
+                    raise error
+
+    def put_parameter(self, new_parameter: NewParameter):
+        """
+        Add a parameter to AWS SSM
+        """
+        resp = self.client.put_parameter(
+            Name=new_parameter.Name,
+            Value=new_parameter.Value,
+            Type=new_parameter.Type,
+            Description=new_parameter.Description,
+        )
+        logger.info(resp)
