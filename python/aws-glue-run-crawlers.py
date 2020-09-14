@@ -23,11 +23,20 @@ def main():
     args = setup_args()
     Util.check_debug_mode(args)
 
-    logger.info("Going to run %d crawlers" % len(args.crawler_names))
     glue = Glue(args.profile)
-    glue.batch_get_crawlers(args.crawler_names)
+
+    if args.crawler_names:
+        logger.info("Going to run %d crawlers" % len(args.crawler_names))
+        glue.batch_get_crawlers(args.crawler_names)
+
+    if args.environment:
+        logger.info("Going to run crawlers for %s environment" % args.environment)
+        glue.list_crawlers(args.environment)
+        glue.batch_get_crawlers(glue.crawler_names)
+
     glue.display_crawlers()
     crawlers_to_start = glue.get_crawler_names_by_state(state="READY")
+    logger.info("Found %d crawlers to start" % len(crawlers_to_start))
 
     if not args.start_crawlers:
         logger.warning("Simply monitoring - No crawlers will be started!")
@@ -42,13 +51,19 @@ def main():
 
 def setup_args() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=None)
-    parser.add_argument(
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument(
         "-c",
         "--crawler_names",
         nargs="+",
         type=str,
         help="crawler names",
-        required=True,
+    )
+    group.add_argument(
+        "-e",
+        "--environment",
+        help="runs all crawlers for specified environment or all environments",
+        choices=["dev", "stg", "prod"],
     )
     parser.add_argument("-s", "--start_crawlers", action="store_true")
     parser.add_argument("-p", "--profile", choices=Aws.get_profiles(), required=True)

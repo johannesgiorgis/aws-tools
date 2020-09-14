@@ -30,7 +30,9 @@ def main():
 def setup_args() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=None)
     parser.add_argument("-i", "--input_file", required=True)
-    parser.add_argument("-p", "--profile", choices=Aws.get_profiles(), default="default")
+    parser.add_argument(
+        "-p", "--profile", choices=Aws.get_profiles(), default="default"
+    )
     parser.add_argument("-d", "--debug", action="store_true")
     return parser.parse_args()
 

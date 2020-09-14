@@ -92,7 +92,9 @@ class SSM(AwsService):
 
             logger.info("Getting parameters that contain '%s'..." % values)
             call_arguments = {
-                "ParameterFilters": [{"Key": "Name", "Option": "Contains", "Values": values}],
+                "ParameterFilters": [
+                    {"Key": "Name", "Option": "Contains", "Values": values}
+                ],
                 "NextToken": next_token,
             }
 
