@@ -6,6 +6,7 @@ from datetime import datetime
 import logging
 
 import boto3
+from tabulate import tabulate
 from botocore.exceptions import ClientError
 
 from typing import List
@@ -30,10 +31,10 @@ class Parameter:
         self.arn: str = ARN
         self.name: str = Name
         self.type: str = Type
-        self.value: str = Value
         self.version: int = Version
         self.last_modified_date: datetime = LastModifiedDate
         self.data_type: str = DataType
+        self.value: str = Value
 
     def display(self, show_full_info: bool):
 
@@ -49,6 +50,16 @@ class Parameter:
             }
         else:
             return self.value
+
+    def values(self) -> List[str]:
+        return [
+            self.arn,
+            self.name,
+            self.type,
+            self.version,
+            self.last_modified_date,
+            self.data_type,
+        ]
 
 
 class NewParameter:
@@ -138,6 +149,68 @@ class SSM(AwsService):
     def get_parameter(self, token_key: str, decrypt: bool) -> dict:
         token_param = self.client.get_parameter(Name=token_key, WithDecryption=decrypt)
         return Parameter(**token_param["Parameter"])
+
+    def get_parameters_by_path(
+        self, path: str, recursive: bool, decrypt: bool, values: List[str] = []
+    ):
+        logger.debug("Getting parameters by path for %s..." % path)
+
+        next_token = " "
+
+        call_arguments = {
+            "Path": path,
+            "Recursive": recursive,
+            "WithDecryption": decrypt,
+            "NextToken": next_token,
+        }
+
+        if values:
+            logger.info("Getting parameters that contain '%s'..." % values)
+            additional_arguments = {
+                "ParameterFilters": [
+                    {"Key": "Name", "Option": "Contains", "Values": values}
+                ],
+            }
+            call_arguments.update(additional_arguments)
+
+        self.call_ssm_get_parameters_by_path(call_arguments)
+
+    def call_ssm_get_parameters_by_path(self, arguments: dict):
+        logger.debug("Calling get_parameters_by_path")
+
+        got_all_parameters = False
+
+        while not got_all_parameters:
+            resp = self.client.get_parameters_by_path(**arguments)
+
+            converted: list = self._convert_parameter_dict_to_class(resp["Parameters"])
+            self.parameters.extend(converted)
+            next_token = resp.get("NextToken", None)
+            logger.debug("Next Token: %s" % next_token)
+
+            if not next_token:
+                got_all_parameters = True
+
+            arguments["NextToken"] = next_token
+        logger.info("Found %d parameters" % len(self.parameters))
+
+    def _convert_parameter_dict_to_class(
+        self, parameters: List[dict]
+    ) -> List[Parameter]:
+        """
+        Converst dictionary representation of Parameter to Parameter class
+        """
+        converted: List[Parameter] = []
+        for parameter in parameters:
+            converted.append(Parameter(**parameter))
+        return converted
+
+    def display_parameters(self):
+        print("Displaying parameters without values")
+        if self.parameters:
+            headers = list(vars(self.parameters[0]))
+            table = [parameter.values() for parameter in self.parameters]
+            print(tabulate(table, headers, tablefmt="simple"))
 
     def put_parameters(self, new_parameters: List[NewParameter]):
         """
