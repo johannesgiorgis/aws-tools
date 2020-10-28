@@ -8,6 +8,9 @@ build:
 	docker build --rm -t ${name} .
     # docker build --rm -t aws-tools-python:1.0 .
 
+fresh-build:
+	docker build --rm --no-cache -t ${name} .
+
 # run:
     # docker run -it --rm aws-tools-python:1.0
 
