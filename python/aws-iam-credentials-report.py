@@ -2,6 +2,7 @@
 
 """
 AWS IAM Get Credentials Report
+reference: https://sweetcode.io/auditing-iam-users-aws-sweetcode/
 """
 
 import argparse
