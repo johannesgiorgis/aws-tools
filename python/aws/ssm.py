@@ -26,7 +26,7 @@ class Parameter:
         Value: str,
         Version: int,
         LastModifiedDate: datetime,
-        DataType: str,
+        DataType: str = "",
     ):
         self.arn: str = ARN
         self.name: str = Name
@@ -148,6 +148,7 @@ class SSM(AwsService):
 
     def get_parameter(self, token_key: str, decrypt: bool) -> dict:
         token_param = self.client.get_parameter(Name=token_key, WithDecryption=decrypt)
+        logger.debug("Parameter:%s" % token_param["Parameter"])
         return Parameter(**token_param["Parameter"])
 
     def get_parameters_by_path(

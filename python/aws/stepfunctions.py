@@ -84,9 +84,9 @@ class StepFunctions(AwsService):
     def display_state_machines(self):
         if self.state_machines:
             headers = list(vars(self.state_machines[0]).keys())
-            print("heders:", headers)
+            # print("heders:", headers)
             table = [state_machine.values() for state_machine in self.state_machines]
-            print("tables:", table[0])
+            # print("tables:", table[0])
             print(tabulate(table, headers, tablefmt="simple"))
 
     def organize_state_machines_by_name(self):

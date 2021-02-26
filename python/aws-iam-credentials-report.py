@@ -47,10 +47,17 @@ def setup_args() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=None)
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument(
-        "-r", "--run", help="Run Generate Credential Report Command", action="store_true"
+        "-r",
+        "--run",
+        help="Run Generate Credential Report Command",
+        action="store_true",
     )
-    group.add_argument("-g", "--get", help="Get Generated Credential Report", action="store_true")
-    parser.add_argument("-p", "--profile", choices=Aws.get_profiles(), default="default")
+    group.add_argument(
+        "-g", "--get", help="Get Generated Credential Report", action="store_true"
+    )
+    parser.add_argument(
+        "-p", "--profile", choices=Aws.get_profiles(), default="default"
+    )
     parser.add_argument("-d", "--debug", action="store_true")
     return parser.parse_args()
 

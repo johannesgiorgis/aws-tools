@@ -59,7 +59,9 @@ class IAMCredentialReport:
         # user was found with 'no_information' for column password_last_used
         # this results in the above parse_dates command to not properly convert those columns
         # so we need to set these values to NaN and manually the columns to datetime format
-        self.df = self.df.replace("no_information", np.NaN).replace("not_supported", np.NaN)
+        self.df = self.df.replace("no_information", np.NaN).replace(
+            "not_supported", np.NaN
+        )
         self.df[
             ["password_last_used", "password_last_changed", "password_next_rotation"]
         ] = self.df[
